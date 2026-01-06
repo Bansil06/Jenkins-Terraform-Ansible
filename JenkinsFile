@@ -29,11 +29,7 @@ pipeline {
 
         stage('Commit static_inventory file into GitHub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'github-creds',
-                    usernameVariable: 'GIT_USER',
-                    passwordVariable: 'GIT_TOKEN'
-                )]) {
+                withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
                     sh '''
                       git checkout main || git checkout -b main
                       git config user.email "patelbansi@gmail.com"
@@ -42,7 +38,8 @@ pipeline {
                       if [ -f static_inventory ]; then
                         git add static_inventory
                         git commit -m "static_inventory added by Jenkins" || true
-                        git push https://${GIT_USER}:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
+                        # Using PAT as password, username can be blank
+                        git push https://:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
                       else
                         echo "static_inventory file not found, skipping commit"
                       fi
