@@ -24,16 +24,13 @@ resource "null_resource" "clean_up" {
 }
 
 ################## Create static inventory ################## 
-resource "null_resource" "generate_static_inventory" {
-  provisioner "local-exec" {
-    command = <<EOT
-cat <<EOF > static_inventory
-${templatefile("${path.module}/static-inventory-template.tpl", {
-  ubuntu = aws_instance.web[*].public_ip
-})}
-EOF
-EOT
-  }
+resource "local_file" "static_inventory" {
+  content = templatefile("${path.module}/static-inventory-template.tpl", {
+    ubuntu = aws_instance.web[*].public_ip
+  })
+
+  filename = "${path.module}/static_inventory"
+}
 
   depends_on = [
     aws_instance.web
