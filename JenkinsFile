@@ -32,18 +32,24 @@ pipeline {
             }
         }
 
-        stage('Commit static_inventory file into github') {
-            steps {
-                sh '''
-                  git status
-                  git config user.email "patelbansi@gmail.com"
-                  git config user.name "Bansil06"
-                  git add .
-                  git commit -m "static_inventory file added by Jenkins Pipeline" || true
-                  git push https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/${GITHUB_CREDS_USR}/jenkins-terraform-ansible.git HEAD:main
-                '''
-            }
+stage('Commit static_inventory file into github') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'github-creds',
+            usernameVariable: 'GIT_USER',
+            passwordVariable: 'GIT_TOKEN'
+        )]) {
+            sh '''
+              git config user.email "patelbansi@gmail.com"
+              git config user.name "Bansil06"
+              git add static_inventory || true
+              git commit -m "static_inventory added by Jenkins" || true
+              git push https://${GIT_USER}:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git HEAD:main
+            '''
         }
+    }
+}
+
 
         stage('Ansible - Install Docker on remote hosts') {
             agent { label 'ansible' }
