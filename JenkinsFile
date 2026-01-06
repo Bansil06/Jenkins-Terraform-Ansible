@@ -5,6 +5,8 @@ pipeline {
         AWS_ACCESS_KEY_ID     = credentials('aws-creds')
         AWS_SECRET_ACCESS_KEY = credentials('aws-creds')
         AWS_DEFAULT_REGION    = 'ap-south-1'
+
+        GITHUB_CREDS = credentials('github-creds')
     }
 
     stages {
@@ -30,28 +32,39 @@ pipeline {
             }
         }
 
-    post {
-        success {
-            echo " Instance ready"
+        stage('Commit static_inventory file into github') {
+            steps {
+                sh '''
+                  git status
+                  git config user.email "shamimice03@gmail.com"
+                  git config user.name "shamim"
+                  git add .
+                  git commit -m "static_inventory file added by Jenkins Pipeline" || true
+                  git push https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/${GITHUB_CREDS_USR}/jenkins-terraform-ansible.git HEAD:main
+                '''
+            }
         }
-        failure {
-            echo "Failed. Check logs above."
+
+        stage('Ansible - Install Docker on remote hosts') {
+            agent { label 'ansible' }
+            steps {
+                ansiblePlaybook(
+                    credentialsId: 'ec2-ssh-key',
+                    disableHostKeyChecking: true,
+                    installation: 'ansible',
+                    inventory: 'static_inventory',
+                    playbook: 'docker_installation_playbook.yaml'
+                )
+            }
         }
     }
-             stage('Commit static_inventory file into github') {
-            steps {
-                sh "git status"
-                sh "git config user.email shamimice03@gmail.com"
-                sh "git config user.name shamim"
-                sh "git add ."
-                sh "git commit -m 'staic_inventory file added by Jenkins Pipeline'"
-                sh "git push https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/${GITHUBS_CRED_USR}/jenkins-terraform-ansible.git HEAD:main"
-            }
+
+    post {
+        success {
+            echo "Instance ready and configuration completed"
         }
-         stage('Ansible-Install docker on remote hosts') {
-            agent {label 'ansible'}
-            steps {
-                ansiblePlaybook credentialsId: 'ec2-ssh-key', disableHostKeyChecking: true, installation: 'ansible', inventory: 'static_inventory', playbook: 'docker_installation_playbook.yaml'            
-            }
+        failure {
+            echo "Pipeline failed. Check logs above."
         }
+    }
 }
