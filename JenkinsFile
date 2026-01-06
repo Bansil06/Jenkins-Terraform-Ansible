@@ -31,18 +31,17 @@ stage('Commit static_inventory file into GitHub') {
     steps {
         withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
             sh '''
-              # Ensure we are on main branch without overwriting files
               git fetch origin main
               git checkout -B main
 
               git config user.email "patelbansi@gmail.com"
               git config user.name "Bansil06"
 
-              # Add and commit static_inventory if it exists
               if [ -f static_inventory ]; then
                   git add static_inventory
                   git diff-index --quiet HEAD || git commit -m "static_inventory added by Jenkins"
-                  git push https://:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
+                  # Use username + token for HTTPS push
+                  git push https://Bansil06:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
               else
                   echo "static_inventory file not found, skipping commit"
               fi
@@ -50,7 +49,6 @@ stage('Commit static_inventory file into GitHub') {
         }
     }
 }
-
 
         stage('Ansible - Install Docker on remote hosts') {
             steps {
