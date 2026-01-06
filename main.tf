@@ -27,8 +27,7 @@ resource "null_resource" "clean_up" {
 resource "null_resource" "generate_static_inventory" {
   provisioner "local-exec" {
     command = templatefile("${path.module}/static-inventory-template.tpl", {
-      amazon = aws_instance.amazon_linux_host[*].public_ip
-      ubuntu = aws_instance.ubuntu_host[*].public_ip
+      ubuntu = aws_instance.web[*].public_ip
     })
   }
 
