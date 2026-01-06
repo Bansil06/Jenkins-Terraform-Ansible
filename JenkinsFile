@@ -27,26 +27,30 @@ pipeline {
             }
         }
 
-        stage('Commit static_inventory file into GitHub') {
-            steps {
-                withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
-                    sh '''
-                      git checkout main || git checkout -b main
-                      git config user.email "patelbansi@gmail.com"
-                      git config user.name "Bansil06"
+stage('Commit static_inventory file into GitHub') {
+    steps {
+        withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
+            sh '''
+              # Ensure we are on main branch
+              git fetch origin main
+              git checkout main || git checkout -b main
 
-                      if [ -f static_inventory ]; then
-                        git add static_inventory
-                        git commit -m "static_inventory added by Jenkins" || true
-                        # Using PAT as password, username can be blank
-                        git push https://:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
-                      else
-                        echo "static_inventory file not found, skipping commit"
-                      fi
-                    '''
-                }
-            }
+              git config user.email "patelbansi@gmail.com"
+              git config user.name "Bansil06"
+
+              # Add and commit static_inventory if it exists
+              if [ -f static_inventory ]; then
+                  git add static_inventory
+                  git diff-index --quiet HEAD || git commit -m "static_inventory added by Jenkins"
+                  git push https://:${GIT_TOKEN}@github.com/Bansil06/Jenkins-Terraform-Ansible.git main
+              else
+                  echo "static_inventory file not found, skipping commit"
+              fi
+            '''
         }
+    }
+}
+
 
         stage('Ansible - Install Docker on remote hosts') {
             steps {
