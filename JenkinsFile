@@ -50,9 +50,10 @@ stage('Commit static_inventory file into GitHub') {
     }
 }
 
-stage('Ansible - Install Docker on remote hosts') {
+stage('Ansible - Install Docker') {
     steps {
         sh '''
+        docker run --rm -v $PWD:/ansible -w /ansible williamyeh/ansible:alpine \
             ansible-playbook -i static_inventory playbooks/install_docker.yml --user ubuntu --private-key /path/to/key.pem
         '''
     }
