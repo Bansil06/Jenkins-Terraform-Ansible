@@ -50,17 +50,13 @@ stage('Commit static_inventory file into GitHub') {
     }
 }
 
-        stage('Ansible - Install Docker on remote hosts') {
-            steps {
-                ansiblePlaybook(
-                    credentialsId: 'ec2-ssh-key',
-                    disableHostKeyChecking: true,
-                    installation: 'ansible',
-                    inventory: 'static_inventory',
-                    playbook: 'docker_installation_playbook.yaml'
-                )
-            }
-        }
+stage('Ansible - Install Docker on remote hosts') {
+    steps {
+        sh '''
+            ansible-playbook -i static_inventory playbooks/install_docker.yml --user ubuntu --private-key /path/to/key.pem
+        '''
+    }
+}
     }
 
     post {
