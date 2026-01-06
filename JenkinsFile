@@ -21,14 +21,22 @@ pipeline {
             }
         }
 
-        stage('Terraform Apply') {
-            steps {
-                sh '''
-                  terraform apply -auto-approve \
-                    -var="key_name=key"
-                '''
+environment {
+    AWS_DEFAULT_REGION = 'ap-south-1'
+}
+
+stages {
+    stage('Terraform Apply') {
+        steps {
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                credentialsId: 'aws-creds'
+            ]]) {
+                sh 'terraform apply -auto-approve -var="key_name=key"'
             }
         }
+    }
+}
 
         stage('Commit static_inventory file into github') {
             steps {
