@@ -53,12 +53,12 @@ stage('Commit static_inventory file into GitHub') {
 stage('Ansible - Install Docker') {
     steps {
         sh '''
-        docker run --rm \
-            -v $PWD:/ansible \
-            -w /ansible \
-            woahbase/alpine-ansible:latest \
-            ansible-playbook -i static_inventory playbooks/install_docker.yml \
-            --user ubuntu --private-key /path/to/key.pem
+docker run --rm \
+  -v /var/lib/jenkins/workspace/Tf-Ansible:/ansible \
+  -w /ansible \
+  woahbase/alpine-ansible:latest \
+  ansible-playbook -i /ansible/static_inventory /ansible/playbooks/install_docker.yml --user ubuntu --private-key /path/to/key.pem
+
         '''
     }
 }
