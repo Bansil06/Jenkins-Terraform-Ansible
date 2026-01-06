@@ -31,5 +31,3 @@ resource "local_file" "static_inventory" {
 
   filename = "${path.module}/static_inventory"
 }
-
-}
