@@ -13,3 +13,26 @@ resource "aws_instance" "web" {
     Name = "Jenkins-Terraform-${count.index}"
   }
 }
+
+
+################## Clean Up Existing Inventory File ################## 
+resource "null_resource" "clean_up" {
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm -rf ../static_inventory"
+  }
+}
+
+################## Create static inventory ################## 
+resource "null_resource" "generate_static_inventory" {
+  provisioner "local-exec" {
+    command = templatefile("${path.module}/static-inventory-template.tpl", {
+      amazon = aws_instance.amazon_linux_host[*].public_ip
+      ubuntu = aws_instance.ubuntu_host[*].public_ip
+    })
+  }
+
+  depends_on = [
+    aws_instance.web,
+  ]
+}
