@@ -52,7 +52,6 @@ pipeline {
         }
 
         stage('Ansible - Install Docker on remote hosts') {
-            agent { label 'ansible' }
             steps {
                 ansiblePlaybook(
                     credentialsId: 'ec2-ssh-key',
