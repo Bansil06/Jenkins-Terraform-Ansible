@@ -39,4 +39,3 @@ EOT
     aws_instance.web
   ]
 }
-}
