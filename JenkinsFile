@@ -31,9 +31,9 @@ stage('Commit static_inventory file into GitHub') {
     steps {
         withCredentials([string(credentialsId: 'github-pat', variable: 'GIT_TOKEN')]) {
             sh '''
-              # Ensure we are on main branch
+              # Ensure we are on main branch without overwriting files
               git fetch origin main
-              git checkout main || git checkout -b main
+              git checkout -B main
 
               git config user.email "patelbansi@gmail.com"
               git config user.name "Bansil06"
